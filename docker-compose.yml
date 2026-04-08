@@ -8,6 +8,8 @@ services:
       MYSQL_DATABASE: tutorias_db
     ports:
       - "3307:3306"
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
 
   catalogo-service:
     build: ./services/catalogo-service
