@@ -26,12 +26,9 @@ public class ReservaService {
     private final FeignClients.CatalogoClient catalogoClient;
     private final FeignClients.UsuariosClient usuariosClient;
 
-    /**
-     * RF07 + RF08: Crear reserva con prevención de conflictos y concurrencia segura.
-     */
     @Transactional
     public ReservaDTO.ReservaResponse crearReserva(ReservaDTO.CrearReservaRequest request) {
-        log.info("Intentando crear reserva: estudiante={}, bloque={}, fecha={}",
+        log.info("Creando reserva: estudiante={}, bloque={}, fecha={}",
                 request.getEstudianteId(), request.getBloqueDisponibilidadId(), request.getFechaSesion());
 
         // 1. Verificar que el estudiante existe (microservicio de Elías)
@@ -39,7 +36,7 @@ public class ReservaService {
             throw new IllegalArgumentException("El estudiante con ID " + request.getEstudianteId() + " no existe.");
         }
 
-        // 2. Verificar que el tutor tiene autorización para la materia (microservicio de Elías)
+        // 2. Verificar que el tutor tiene la materia (microservicio de Elías)
         if (!usuariosClient.verificarTutorTieneMateria(request.getTutorId(), request.getMateriaId())) {
             throw new IllegalArgumentException("El tutor no tiene autorización para dictar esa materia.");
         }
@@ -47,24 +44,29 @@ public class ReservaService {
         // 3. Verificar que el bloque está LIBRE (microservicio de Laura)
         FeignClients.BloqueDisponibilidadDTO bloque =
                 catalogoClient.verificarBloqueDisponible(request.getBloqueDisponibilidadId());
+
         if (bloque == null) {
-            throw new BloqueNoDisponibleException("El bloque no existe o el servicio de catálogo no está disponible.");
+            throw new BloqueNoDisponibleException(
+                    "El bloque no existe o el servicio de catálogo no está disponible.");
         }
         if (!"LIBRE".equals(bloque.getEstado())) {
-            throw new BloqueNoDisponibleException("El bloque seleccionado ya está reservado. Elige otro horario.");
+            throw new BloqueNoDisponibleException(
+                    "El bloque seleccionado ya está reservado. Elige otro horario.");
         }
 
-        // 4. Doble verificación en nuestra BD (protección ante race conditions)
+        // 4. Doble verificación en BD propia (protección ante race conditions)
         Optional<Reserva> reservaExistente = reservaRepository
                 .findReservaActivaEnBloque(request.getBloqueDisponibilidadId(), request.getFechaSesion());
         if (reservaExistente.isPresent()) {
-            throw new BloqueNoDisponibleException("Ese horario acaba de ser reservado. Selecciona otro bloque.");
+            throw new BloqueNoDisponibleException(
+                    "Ese horario acaba de ser reservado. Selecciona otro bloque.");
         }
 
-        // 5. Verificar que el estudiante no tenga ya reserva con ese tutor ese día
+        // 5. Verificar reserva duplicada del mismo estudiante con el mismo tutor ese día
         if (reservaRepository.existeReservaDuplicada(
                 request.getEstudianteId(), request.getTutorId(), request.getFechaSesion())) {
-            throw new BloqueNoDisponibleException("Ya tienes una tutoría agendada con este tutor en esa fecha.");
+            throw new BloqueNoDisponibleException(
+                    "Ya tienes una tutoría agendada con este tutor en esa fecha.");
         }
 
         // 6. Guardar la reserva
@@ -77,9 +79,10 @@ public class ReservaService {
                 .estado(EstadoReserva.ACTIVA)
                 .notasEstudiante(request.getNotasEstudiante())
                 .build();
+
         Reserva guardada = reservaRepository.save(reserva);
 
-        // 7. Notificar a Laura que bloquee el slot
+        // 7. Notificar a catálogo que bloquee el slot
         try {
             catalogoClient.bloquearBloque(request.getBloqueDisponibilidadId());
         } catch (Exception e) {
@@ -90,11 +93,8 @@ public class ReservaService {
         return mapToResponse(guardada);
     }
 
-    /**
-     * RF10: El estudiante cancela su reserva.
-     */
     @Transactional
-    public ReservaDTO.ReservaResponse cancelarReserva(Long reservaId, Long estudianteId) {
+    public ReservaDTO.ReservaResponse cancelarReserva(Long reservaId, String estudianteId) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new ReservaNotFoundException(reservaId));
 
@@ -102,7 +102,8 @@ public class ReservaService {
             throw new IllegalArgumentException("No tienes permiso para cancelar esta reserva.");
         }
         if (reserva.getEstado() != EstadoReserva.ACTIVA) {
-            throw new IllegalArgumentException("Solo se pueden cancelar reservas activas. Estado actual: " + reserva.getEstado());
+            throw new IllegalArgumentException(
+                    "Solo se pueden cancelar reservas activas. Estado actual: " + reserva.getEstado());
         }
         if (reserva.getFechaSesion().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("No se puede cancelar una tutoría que ya pasó.");
@@ -120,11 +121,10 @@ public class ReservaService {
         return mapToResponse(actualizada);
     }
 
-    /**
-     * RF11: El tutor registra asistencia (COMPLETADA o INASISTENCIA).
-     */
     @Transactional
-    public ReservaDTO.ReservaResponse registrarAsistencia(Long reservaId, Long tutorId, EstadoReserva nuevoEstado) {
+    public ReservaDTO.ReservaResponse registrarAsistencia(
+            Long reservaId, String tutorId, EstadoReserva nuevoEstado) {
+
         if (nuevoEstado != EstadoReserva.COMPLETADA && nuevoEstado != EstadoReserva.INASISTENCIA) {
             throw new IllegalArgumentException("Solo se puede marcar COMPLETADA o INASISTENCIA.");
         }
@@ -139,37 +139,34 @@ public class ReservaService {
             throw new IllegalArgumentException("Solo se puede registrar asistencia en reservas activas.");
         }
         if (!reserva.getFechaSesion().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Solo puedes registrar asistencia de sesiones que ya ocurrieron.");
+            throw new IllegalArgumentException(
+                    "Solo puedes registrar asistencia de sesiones que ya ocurrieron.");
         }
 
         reserva.setEstado(nuevoEstado);
         return mapToResponse(reservaRepository.save(reserva));
     }
 
-    // RF09: Dashboard estudiante
     @Transactional(readOnly = true)
-    public List<ReservaDTO.ReservaResponse> getProximasTutoriasEstudiante(Long estudianteId) {
+    public List<ReservaDTO.ReservaResponse> getProximasTutoriasEstudiante(String estudianteId) {
         return reservaRepository.findProximasTutoriasEstudiante(estudianteId, LocalDate.now())
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    // RF09: Dashboard tutor
     @Transactional(readOnly = true)
-    public List<ReservaDTO.ReservaResponse> getProximasTutoriasTutor(Long tutorId) {
+    public List<ReservaDTO.ReservaResponse> getProximasTutoriasTutor(String tutorId) {
         return reservaRepository.findProximasTutoriasTutor(tutorId, LocalDate.now())
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    // RF11: Sesiones pendientes de asistencia del tutor
     @Transactional(readOnly = true)
-    public List<ReservaDTO.ReservaResponse> getSesionesPendientesAsistencia(Long tutorId) {
+    public List<ReservaDTO.ReservaResponse> getSesionesPendientesAsistencia(String tutorId) {
         return reservaRepository.findSesionesPendientesAsistencia(tutorId, LocalDate.now())
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    // RF12: Historial del estudiante
     @Transactional(readOnly = true)
-    public List<ReservaDTO.ReservaResponse> getHistorialEstudiante(Long estudianteId) {
+    public List<ReservaDTO.ReservaResponse> getHistorialEstudiante(String estudianteId) {
         return reservaRepository.findHistorialEstudiante(estudianteId)
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -182,10 +179,16 @@ public class ReservaService {
 
     private ReservaDTO.ReservaResponse mapToResponse(Reserva r) {
         return ReservaDTO.ReservaResponse.builder()
-                .id(r.getId()).estudianteId(r.getEstudianteId()).tutorId(r.getTutorId())
-                .bloqueDisponibilidadId(r.getBloqueDisponibilidadId()).materiaId(r.getMateriaId())
-                .fechaSesion(r.getFechaSesion()).fechaCreacion(r.getFechaCreacion())
-                .fechaHoraCreacion(r.getFechaHoraCreacion()).estado(r.getEstado())
-                .notasEstudiante(r.getNotasEstudiante()).build();
+                .id(r.getId())
+                .estudianteId(r.getEstudianteId())
+                .tutorId(r.getTutorId())
+                .bloqueDisponibilidadId(r.getBloqueDisponibilidadId())
+                .materiaId(r.getMateriaId())
+                .fechaSesion(r.getFechaSesion())
+                .fechaCreacion(r.getFechaCreacion())
+                .fechaHoraCreacion(r.getFechaHoraCreacion())
+                .estado(r.getEstado())
+                .notasEstudiante(r.getNotasEstudiante())
+                .build();
     }
 }

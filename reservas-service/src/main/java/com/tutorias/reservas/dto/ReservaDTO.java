@@ -11,17 +11,18 @@ public class ReservaDTO {
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CrearReservaRequest {
+
         @NotNull(message = "El ID del estudiante es obligatorio")
-        private Long estudianteId;
+        private String estudianteId;
 
         @NotNull(message = "El ID del tutor es obligatorio")
-        private Long tutorId;
+        private String tutorId;
 
         @NotNull(message = "El ID del bloque de disponibilidad es obligatorio")
         private Long bloqueDisponibilidadId;
 
         @NotNull(message = "El ID de la materia es obligatorio")
-        private Long materiaId;
+        private String materiaId;
 
         @NotNull(message = "La fecha de la sesión es obligatoria")
         @Future(message = "La fecha de la sesión debe ser en el futuro")
@@ -33,10 +34,10 @@ public class ReservaDTO {
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ReservaResponse {
         private Long id;
-        private Long estudianteId;
-        private Long tutorId;
+        private String estudianteId;
+        private String tutorId;
         private Long bloqueDisponibilidadId;
-        private Long materiaId;
+        private String materiaId;
         private LocalDate fechaSesion;
         private LocalDate fechaCreacion;
         private LocalDateTime fechaHoraCreacion;

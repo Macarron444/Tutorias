@@ -1,18 +1,86 @@
 version: "3.9"
 
+networks:
+  tutorias-network:
+    driver: bridge
+
 services:
+
+  # ---- BASES DE DATOS ----
+  mongodb:
+    image: mongo:latest
+    container_name: mongo-tutorias
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - tutorias-network
+
   mysql:
     image: mysql:8
+    container_name: mysql-tutorias
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: tutorias_db
     ports:
       - "3307:3306"
     volumes:
-      - ./mysql-init:/docker-entrypoint-initdb.d
+      - ./catalogo-service/init.sql:/docker-entrypoint-initdb.d/init.sql  # <- cambio
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tutorias-network
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-tutorias
+    environment:
+      POSTGRES_DB: tutorias_reservas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tutorias-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- EUREKA SERVER ----
+  eureka-server:
+    image: steeltoeoss/eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - tutorias-network
+
+  usuarios-service:
+    build: ./Microservicio-usuarios-main
+    container_name: usuarios-service
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    depends_on:
+      - mongodb
+      - eureka-server
+    environment:
+      DATABASE_URL: mongodb://mongodb:27017
+      EUREKA_SERVER: http://eureka-server:8761/eureka
+      SECRET_KEY: tu_clave_super_secreta_12345
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+    networks:
+      - tutorias-network
+
+  # ---- MICROSERVICIO CATÁLOGO (Laura - Node.js) ----
   catalogo-service:
-    build: ./services/catalogo-service
+    build: ./catalogo-service
+    container_name: catalogo-service
     ports:
       - "3000:3000"
     depends_on:
@@ -22,3 +90,30 @@ services:
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: tutorias_db
+      PORT: 3000
+    networks:
+      - tutorias-network
+
+  # ---- MICROSERVICIO RESERVAS (Nicolás - Java) ----
+  reservas-service:
+    build: ./reservas-service
+    container_name: reservas-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tutorias_reservas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    networks:
+      - tutorias-network
+
+volumes:
+  mongo_data:
+  mysql_data:
+  postgres_data:

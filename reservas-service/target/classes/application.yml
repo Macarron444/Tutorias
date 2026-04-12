@@ -6,7 +6,7 @@ spring:
     name: reservas-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/tutorias_reservas
+    url: jdbc:postgresql://postgres:5432/tutorias_reservas
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -18,16 +18,21 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
 
+# Eureka solo para registrar reservas, no para descubrir los otros
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
+      defaultZone: http://eureka-server:8761/eureka/
+    fetch-registry: false   # ← No busca otros servicios en Eureka
     register-with-eureka: true
   instance:
     prefer-ip-address: true
+
+# URLs directas de los otros servicios
+servicios:
+  usuarios-url: http://usuarios-service:8000
+  catalogo-url: http://catalogo-service:3000
 
 logging:
   level:

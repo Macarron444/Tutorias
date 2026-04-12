@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+
+# Variables sensibles, se supone no se debe subir porque es seguridad, pero para que funcione necesitamos eso
+#.env
+
+# Docker
+.dockerignore
+
+# Editores
+.vscode/
+.idea/

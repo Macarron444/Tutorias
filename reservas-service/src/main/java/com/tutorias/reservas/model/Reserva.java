@@ -17,21 +17,17 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ID del estudiante - viene del microservicio de Elías
     @Column(name = "estudiante_id", nullable = false)
-    private Long estudianteId;
+    private String estudianteId;
 
-    // ID del tutor - viene del microservicio de Elías
     @Column(name = "tutor_id", nullable = false)
-    private Long tutorId;
+    private String tutorId;
 
-    // ID del bloque de disponibilidad - viene del microservicio de Laura
     @Column(name = "bloque_disponibilidad_id", nullable = false)
     private Long bloqueDisponibilidadId;
 
-    // ID de la materia - viene del microservicio de Laura
     @Column(name = "materia_id", nullable = false)
-    private Long materiaId;
+    private String materiaId;
 
     @Column(name = "fecha_sesion", nullable = false)
     private LocalDate fechaSesion;
