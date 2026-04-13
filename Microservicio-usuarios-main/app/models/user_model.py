@@ -12,5 +12,7 @@ class Usuario(BaseModel):
     correo: EmailStr
     password_hash: str
     rol: RolUsuario
+    carrera: Optional[str] = "Ingeniería de Sistemas"
+    semestre: Optional[int] = 5
     # Lista de IDs de materias que el tutor puede dictar
     materias: Optional[List[str]] = []

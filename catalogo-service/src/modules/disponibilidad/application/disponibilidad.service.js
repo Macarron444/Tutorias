@@ -45,6 +45,10 @@ class DisponibilidadService {
   async cambiarEstado(bloqueId, nuevoEstado) {
     return this.repository.actualizarEstado(bloqueId, nuevoEstado);
   }
+
+  async getFranjasPorMateria(materiaId) {
+    return this.repository.getDisponibilidadByMateria(materiaId);
+  }
 }
 
 module.exports = DisponibilidadService;

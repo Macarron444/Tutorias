@@ -14,4 +14,7 @@ router.get('/:bloqueId/disponible', controller.verificarDisponible);
 router.put('/:bloqueId/bloquear', controller.bloquear);
 router.put('/:bloqueId/liberar', controller.liberar);
 
+// ---- Endpoint para frontend ----
+router.get('/materia/:materiaId', controller.franjasPorMateria);
+
 module.exports = router;

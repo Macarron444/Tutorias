@@ -39,6 +39,15 @@ class DisponibilidadController {
       res.status(500).json({ error: err.message });
     }
   };
+
+  franjasPorMateria = async (req, res) => {
+    try {
+      const franjas = await this.service.getFranjasPorMateria(req.params.materiaId);
+      res.json(franjas);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
 }
 
 module.exports = DisponibilidadController;

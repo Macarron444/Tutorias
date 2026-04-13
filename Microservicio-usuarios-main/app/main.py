@@ -51,6 +51,16 @@ async def verificar_tutor_materia(tutor_id: str, materiaId: str):
     except:
         return False
 
+@app.get("/api/usuarios/{usuario_id}/nombre")
+async def obtener_nombre_usuario(usuario_id: str):
+    try:
+        user = await usuarios_collection.find_one({"correo": usuario_id})
+        if not user:
+            user = await usuarios_collection.find_one({"_id": ObjectId(usuario_id)})
+        return {"nombre": user["nombre"] if user else usuario_id}
+    except:
+        return {"nombre": usuario_id}
+
 # --- Configuración de Eureka ---
 EUREKA_SERVER = os.getenv("EUREKA_SERVER", "http://localhost:8761/eureka")
 APP_NAME = "usuarios-service"

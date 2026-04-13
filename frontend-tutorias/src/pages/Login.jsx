@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/axiosConfig';
+import Swal from 'sweetalert2';
 import './Login.css';
 
 export default function Login() {
@@ -13,11 +14,15 @@ export default function Login() {
     try {
       const response = await apiClient.post('/auth/login', { correo, password });
       localStorage.setItem('token', response.data.access_token);
-      alert("Autenticación exitosa");
+      // Removed the alert here!
       navigate('/catalogo');
     } catch (error) {
       console.error(error);
-      alert("Error al iniciar sesión. Revisa tus credenciales.");
+      Swal.fire({
+        title: 'Error de acceso',
+        text: 'Revisa tus credenciales e intenta de nuevo.',
+        icon: 'error',
+      });
     }
   };
 
@@ -77,7 +82,7 @@ export default function Login() {
             
             <div className="login-divider"></div>
             
-            <button type="button" className="login-register-btn" onClick={() => alert("Aquí abriremos el modal de Registro")}>
+            <button type="button" className="login-register-btn" onClick={() => Swal.fire('Proximamente', 'La creación de cuenta estará disponible pronto.', 'info')}>
               Crear cuenta nueva
             </button>
           </form>

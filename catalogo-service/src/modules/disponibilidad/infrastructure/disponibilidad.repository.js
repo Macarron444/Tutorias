@@ -49,6 +49,17 @@ class DisponibilidadRepository {
       [nuevoEstado, bloqueId]
     );
   }
+
+  async getDisponibilidadByMateria(materiaId) {
+    const [rows] = await db.query(
+      'SELECT bd.id, bd.tutor_id, bd.fecha_inicio, bd.fecha_fin, m.nombre as materia_nombre ' +
+      'FROM bloque_disponibilidad bd ' +
+      'JOIN materia m ON m.id = bd.materia_id ' +
+      'WHERE bd.estado = "LIBRE" AND m.id = ?',
+      [materiaId]
+    );
+    return rows;
+  }
 }
 
 module.exports = DisponibilidadRepository;

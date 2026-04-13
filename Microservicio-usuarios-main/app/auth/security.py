@@ -11,8 +11,8 @@ from fastapi import Depends, HTTPException, status
 # Cargar las variables del archivo .env
 load_dotenv()
 # Ahora leemos los valores desde el entorno
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY", "tu_clave_super_secreta_12345")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -43,7 +43,12 @@ def obtener_usuario_actual(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # Extraer el JWT del string Bearer
+        if token.startswith("Bearer "):
+            token = token.split(" ")[1]
+            
         # Decodificamos el token usando nuestra SECRET_KEY
+        print(f"DEBUG: '{token}'")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         correo: str = payload.get("sub")
         rol: str = payload.get("rol")

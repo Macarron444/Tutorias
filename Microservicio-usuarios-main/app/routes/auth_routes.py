@@ -73,9 +73,11 @@ async def ver_mi_perfil(usuario_token: dict = Depends(obtener_usuario_actual)):
     # Retornamos la info completa (quitando el password_hash por seguridad)
     return {
         "id": str(user["_id"]),
-        "nombre": user["nombre"],
-        "correo": user["correo"],
-        "rol": user["rol"],
+        "nombre": user.get("nombre", "Sin Nombre"),
+        "correo": user.get("correo", ""),
+        "rol": user.get("rol", "ESTUDIANTE"),
+        "carrera": user.get("carrera", "Ingeniería de Sistemas"),
+        "semestre": user.get("semestre", 5),
         "materias": user.get("materias", []) # Si no tiene el campo, devuelve []
     }
 
