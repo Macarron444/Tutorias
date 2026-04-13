@@ -1,0 +1,1 @@
+* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Outfit', sans-serif; background-color: #f0f2f5; width: 100%; min-height: 100vh; overflow-x: hidden; } #root { width: 100%; min-height: 100vh; display: flex; flex-direction: column; } a { text-decoration: none; }
