@@ -2,6 +2,7 @@ package com.tutorias.reservas.dto;
 
 import com.tutorias.reservas.model.EstadoReserva;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ public class ReservaDTO {
         private String materiaId;
 
         @NotNull(message = "La fecha de la sesión es obligatoria")
-        @Future(message = "La fecha de la sesión debe ser en el futuro")
+        @FutureOrPresent(message = "La fecha de la sesión debe ser hoy o en el futuro")
         private LocalDate fechaSesion;
 
         private String notasEstudiante;

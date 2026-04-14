@@ -472,3 +472,8 @@
 }
 
 
+
+/* Fix for SweetAlert overlapping with modals */
+.swal2-container {
+  z-index: 10000 !important;
+}
