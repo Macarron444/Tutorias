@@ -1,4 +1,4 @@
-const db = require('../../../config/db');
+﻿const db = require('../../../config/db');
 
 class DisponibilidadRepository {
   async existeSolapamiento(tutor_id, inicio, fin) {
@@ -60,6 +60,19 @@ class DisponibilidadRepository {
     );
     return rows;
   }
-}
 
+
+  async getDisponibilidadByTutor(tutorId) {
+    const [rows] = await db.query(
+      'SELECT bd.id as bloque_id, bd.tutor_id, bd.fecha_inicio, bd.fecha_fin, bd.estado, m.nombre as materia_nombre ' +
+      'FROM bloque_disponibilidad bd ' +
+      'JOIN materia m ON m.id = bd.materia_id ' +
+      'WHERE bd.tutor_id = ?',
+      [tutorId]
+    );
+    return rows;
+  }
+}
 module.exports = DisponibilidadRepository;
+
+

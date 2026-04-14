@@ -1,4 +1,4 @@
-const router = require('express').Router();
+﻿const router = require('express').Router();
 const Repo = require('../infrastructure/disponibilidad.repository');
 const Service = require('../application/disponibilidad.service');
 const Controller = require('./disponibilidad.controller');
@@ -17,4 +17,6 @@ router.put('/:bloqueId/liberar', controller.liberar);
 // ---- Endpoint para frontend ----
 router.get('/materia/:materiaId', controller.franjasPorMateria);
 
+
+router.get('/tutor/:tutorId', controller.getByTutor);
 module.exports = router;

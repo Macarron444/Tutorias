@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Catalogo from './pages/Catalogo';
-import Reservas from './pages/Reservas';
+import DashboardEstudiante from './pages/DashboardEstudiante';
+import ReservasEstudiante from './pages/ReservasEstudiante';
+import PanelTutor from './pages/PanelTutor';
 
 function App() {
   return (
@@ -9,8 +10,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/catalogo" element={<Catalogo />} />
-        <Route path="/reservas" element={<Reservas />} />
+        <Route path="/dashboard" element={<DashboardEstudiante />} />
+        <Route path="/reservas" element={<ReservasEstudiante />} />
+        <Route path="/tutor" element={<PanelTutor />} />
       </Routes>
     </Router>
   );

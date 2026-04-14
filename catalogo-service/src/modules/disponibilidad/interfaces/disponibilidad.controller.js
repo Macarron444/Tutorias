@@ -1,4 +1,4 @@
-class DisponibilidadController {
+﻿class DisponibilidadController {
   constructor(service) {
     this.service = service;
   }
@@ -48,6 +48,26 @@ class DisponibilidadController {
       res.status(500).json({ error: err.message });
     }
   };
-}
 
+  getByTutor = async (req, res) => {
+    try {
+      const { tutorId } = req.params;
+      const bloques = await this.service.getDisponibilidadTutor(tutorId);
+      res.json(bloques);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  getByTutor = async (req, res) => {
+    try {
+      const { tutorId } = req.params;
+      const bloques = await this.service.getDisponibilidadTutor(tutorId);
+      res.json(bloques);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+}
 module.exports = DisponibilidadController;
+

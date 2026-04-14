@@ -9,7 +9,7 @@ const parseUtcDate = (fechaStr) => {
   return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
 };
 
-export default function Catalogo() {
+export default function DashboardEstudiante() {
   const [user, setUser] = useState(null);
   const [materias, setMaterias] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');

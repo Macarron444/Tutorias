@@ -14,8 +14,12 @@ export default function Login() {
     try {
       const response = await apiClient.post('/auth/login', { correo, password });
       localStorage.setItem('token', response.data.access_token);
-      // Removed the alert here!
-      navigate('/catalogo');
+      
+      if (response.data.user.rol === 'TUTOR') {
+        navigate('/tutor');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error(error);
       Swal.fire({

@@ -1,4 +1,4 @@
-const dayjs = require('dayjs');
+﻿const dayjs = require('dayjs');
 
 class DisponibilidadService {
   constructor(repository) {
@@ -10,13 +10,13 @@ class DisponibilidadService {
 
     const Bloque = require('../domain/bloque.entity');
 
-    // Validar con la entidad (lanza error si las fechas son inválidas)
+    // Validar con la entidad (lanza error si las fechas son invÃ¡lidas)
     new Bloque({ tutor_id, fecha_inicio, fecha_fin });
 
     const inicio = dayjs(fecha_inicio);
     const fin = dayjs(fecha_fin);
 
-    if (fin.isBefore(inicio)) throw new Error('Fechas inválidas');
+    if (fin.isBefore(inicio)) throw new Error('Fechas invÃ¡lidas');
 
     const conflicto = await this.repository.existeSolapamiento(
       tutor_id, fecha_inicio, fecha_fin
@@ -49,6 +49,14 @@ class DisponibilidadService {
   async getFranjasPorMateria(materiaId) {
     return this.repository.getDisponibilidadByMateria(materiaId);
   }
-}
 
+  async getDisponibilidadTutor(tutorId) {
+    return this.repository.getDisponibilidadByTutor(tutorId);
+  }
+
+  async getDisponibilidadTutor(tutorId) {
+    return this.repository.getDisponibilidadByTutor(tutorId);
+  }
+}
 module.exports = DisponibilidadService;
+

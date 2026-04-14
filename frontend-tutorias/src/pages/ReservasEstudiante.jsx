@@ -184,7 +184,7 @@ export default function Reservas() {
               </div>
             </div>
           )}
-          <Link to='/catalogo' className='nav-link'>Ver Catálogo</Link>
+          <Link to='/dashboard' className='nav-link'>Ver Catálogo</Link>
           <button onClick={handleLogout} className='btn-logout'>Cerrar Sesión</button>
         </div>
       </nav>
@@ -299,7 +299,7 @@ export default function Reservas() {
                   if (result.isConfirmed) {
                     const startParam = slotInfo.start.toISOString();
                     const endParam = slotInfo.end.toISOString();
-                    navigate(`/catalogo?start=${startParam}&end=${endParam}`);
+                    navigate(`/dashboard?start=${startParam}&end=${endParam}`);
                   }
                 }}
                 messages={{
