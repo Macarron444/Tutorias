@@ -138,9 +138,30 @@ public class ReservaService {
         if (reserva.getEstado() != EstadoReserva.ACTIVA) {
             throw new IllegalArgumentException("Solo se puede registrar asistencia en reservas activas.");
         }
-        if (!reserva.getFechaSesion().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException(
-                    "Solo puedes registrar asistencia de sesiones que ya ocurrieron.");
+
+        try {
+            FeignClients.BloqueDisponibilidadDTO bloque = catalogoClient.verificarBloqueDisponible(reserva.getBloqueDisponibilidadId());
+            if (bloque != null && bloque.getHoraFin() != null) {
+                java.time.LocalDateTime finDeClase = java.time.Instant.parse(bloque.getHoraFin())
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime();
+                // Dar 1 hora de rango (puede registrar asistencia hasta 1 hora antes de que termine)
+                if (java.time.LocalDateTime.now().isBefore(finDeClase.minusHours(1))) {
+                    throw new IllegalArgumentException("Aún es muy pronto para registrar asistencia de esta sesión.");
+                }
+            } else {
+                // Validación simplificada si no tenemos el horario exacto del bloque
+                if (reserva.getFechaSesion().isAfter(LocalDate.now())) {
+                    throw new IllegalArgumentException("La sesión aún no ocurre.");
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            // Fallback si falla el microservicio o el parseo
+            if (reserva.getFechaSesion().isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("Solo puedes registrar asistencia de sesiones que ya ocurrieron o son de hoy (fallback).");
+            }
         }
 
         reserva.setEstado(nuevoEstado);

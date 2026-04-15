@@ -166,7 +166,7 @@ export default function PanelTutor() {
 
       Swal.fire('Registrado', 'Se guardó como ' + statusText, 'success');
     } catch(err) {
-      Swal.fire('Error', 'No se pudo actualizar: ' + err.message, 'error');
+        Swal.fire('Error', 'No se pudo actualizar: ' + (err.response?.data?.mensaje || err.response?.data?.error || err.message), 'error');
     }
   };
 

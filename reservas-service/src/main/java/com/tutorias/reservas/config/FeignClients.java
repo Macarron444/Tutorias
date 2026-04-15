@@ -44,6 +44,10 @@ public class FeignClients {
         private String diaSemana;
         private String horaInicio;
         private String horaFin;
+        @com.fasterxml.jackson.annotation.JsonProperty("fecha_inicio")
+        private String fechaInicio;
+        @com.fasterxml.jackson.annotation.JsonProperty("fecha_fin")
+        private String fechaFin;
         private String estado;
     }
 

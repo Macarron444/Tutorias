@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ReservaDTO.ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+        System.out.println("ERROR 400 - IllegalArgumentException: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ReservaDTO.ApiResponse.error(ex.getMessage()));
     }
